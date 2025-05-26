@@ -1,54 +1,50 @@
-# React + TypeScript + Vite
+# Formula One Explorer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## How to Run
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+npm i
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Technical Approach and Architectural Decisions
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+The main approach is based on two system components:
+
+### 1. MainLayout
+- Adds pagination
+- Handles loading and error display
+- Handles card/list view toggle
+
+### 2. useFetch
+- Responsible for fetching data from the server with a given service function and params
+- Refetches when pagination changes
+- Memoizes responses according to the offset to avoid fetching data for the same page multiple times
+
+Every page uses `MainLayout`, which takes data from `useFetch` and informs `useFetch` when pagination changes.
+
+---
+
+- Built with TypeScript using generic interfaces to handle response types and mapping
+- Card/list view toggle is handled with Context API to pass the toggle from `MainLayout` to `DataLayout`
+- Pinned races are handled with `localStorage` to persist data after refresh  
+  - Format: JSON  
+    - **Key:** `"round;season"`  
+    - **Value:** `IRacesDetails`  
+  - This key-value format allows for easy O(1) access for filters
+- Used TailwindCSS for simple styling
+
+---
+
+## The Power of This Approach
+
+When you want to add another page that fetches other data, all you have to do is:
+
+1. Create a service that fetches data with Axios
+2. Add a component with `useFetch` that takes this service as input
+3. Add `MainLayout` with `DataLayout` for your data
+
+That's it!  
+Now you have loading/error handling, data displayed with card/list view, pagination, and memoized fetched data with just the three steps above.
